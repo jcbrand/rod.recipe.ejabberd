@@ -140,6 +140,9 @@ sh -c "$ERL -sname ctl-%(ejabberd_node)s -noinput -hidden -pa $PART/lib/ejabberd
         erlang_path = self.options.get('erlang-path')
         if erlang_path:
             cmd.append('--with-erlang=%s' % erlang_path)
+        enable_odbc = self.options.get('enable-odbc')
+        if enable_odbc and enable_odbc.lower() in ('1', 'yes', 'true', 'on'):
+            cmd.append('--enable-odbc')
         retcode = subprocess.call(cmd)
         if retcode != 0:
             raise Exception("building ejabberd failed")

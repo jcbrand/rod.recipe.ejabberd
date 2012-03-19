@@ -9,6 +9,9 @@ erlang-path
 url
     The URL to download the ejabberd source distribution.
 
+enable-odbc
+    Build ejabberd with ODBC support (default = false).
+
 prefix
     Prefix path (default = <buildout directory>).
  
