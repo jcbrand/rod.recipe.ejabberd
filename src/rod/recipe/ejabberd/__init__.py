@@ -97,35 +97,41 @@ sh -c "$ERL -sname ctl-%(ejabberd_node)s -noinput -hidden -pa $PART/lib/ejabberd
     def install_ejabberd(self):
         """Downloads and installs ejabberd."""
 
-        arch_filename = self.options['url'].split(os.sep)[-1]
-        downloads_dir = os.path.join(os.getcwd(), 'downloads')
-        if not os.path.isdir(downloads_dir):
-            os.mkdir(downloads_dir)
-        src = os.path.join(downloads_dir, arch_filename)
-        if not os.path.isfile(src):
-            logger.info("downloading ejabberd distribution...")
-            urllib.urlretrieve(self.options['url'], src)
+        path = self.options.get('path', None)
+        if path is not None:
+            remove_after_install = []
         else:
-            logger.info("ejabberd distribution already downloaded.")
+            arch_filename = self.options['url'].split(os.sep)[-1]
+            downloads_dir = os.path.join(os.getcwd(), 'downloads')
+            if not os.path.isdir(downloads_dir):
+                os.mkdir(downloads_dir)
+            src = os.path.join(downloads_dir, arch_filename)
+            if not os.path.isfile(src):
+                logger.info("downloading ejabberd distribution...")
+                urllib.urlretrieve(self.options['url'], src)
+            else:
+                logger.info("ejabberd distribution already downloaded.")
 
-        extract_dir = tempfile.mkdtemp("buildout-" + self.name)
-        remove_after_install = [extract_dir]
-        is_ext = arch_filename.endswith
-        is_archive = True
-        if is_ext('.tar.gz') or is_ext('.tgz'):
-            call = ['tar', 'xzf', src, '-C', extract_dir]
-        elif is_ext('.zip'):
-            call = ['unzip', src, '-d', extract_dir]
-        else:
-            is_archive = False
+            extract_dir = tempfile.mkdtemp("buildout-" + self.name)
+            remove_after_install = [extract_dir]
+            is_ext = arch_filename.endswith
+            is_archive = True
+            if is_ext('.tar.gz') or is_ext('.tgz'):
+                call = ['tar', 'xzf', src, '-C', extract_dir]
+            elif is_ext('.zip'):
+                call = ['unzip', src, '-d', extract_dir]
+            else:
+                is_archive = False
 
-        if is_archive:
-            retcode = subprocess.call(call)
-            if retcode != 0:
-                raise Exception("extraction of file %r failed (tempdir: %r)" %
-                                (arch_filename, extract_dir))
-        else:
-            shutil.copy(arch_filename, extract_dir)
+            if is_archive:
+                retcode = subprocess.call(call)
+                if retcode != 0:
+                    raise Exception("extraction of file %r failed (tempdir: %r)" %
+                                    (arch_filename, extract_dir))
+            else:
+                shutil.copy(arch_filename, extract_dir)
+
+            path = os.path.join(extract_dir, os.listdir(extract_dir)[0])
 
         part_dir = self.buildout['buildout']['parts-directory']
         dst = os.path.join(part_dir, self.name)
@@ -134,7 +140,7 @@ sh -c "$ERL -sname ctl-%(ejabberd_node)s -noinput -hidden -pa $PART/lib/ejabberd
             os.mkdir(dst)
 
         old_cwd = os.getcwd()
-        os.chdir(os.path.join(extract_dir, os.listdir(extract_dir)[0], 'src'))
+        os.chdir(os.path.join(path, 'src'))
 
         cmd = ['./configure', '--prefix=%s' % dst]
         erlang_path = self.options.get('erlang-path')
