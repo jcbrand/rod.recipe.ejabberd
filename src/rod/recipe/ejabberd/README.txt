@@ -14,9 +14,12 @@ enable-odbc
 
 prefix
     Prefix path (default = <buildout directory>).
- 
+
 make
     Alternate make command (e.g. gmake).
+
+nodename
+    Name of the ejabberd server. Defaults to the name of the buildout part.
 
 
 Tests
