@@ -32,7 +32,8 @@ class Recipe(zc.recipe.egg.Eggs):
             erl = 'erl'
         ejabberd_part = os.path.join(
             self.buildout['buildout']['parts-directory'], self.name)
-        ejabberd_node = self.name + '@' + 'localhost'
+        nodename = self.options.get('nodename', self.name)
+        ejabberd_node = nodename + '@' + 'localhost'
 
         ejabberd_template = """#!/bin/sh
 ERL=%(erl)s
@@ -51,7 +52,7 @@ export HOME=$ROOT/var/ejabberd
 
 exec $ERL \\
     -pa $PART/lib/ejabberd/ebin \\
-    -sname ejabberd@localhost \\
+    -sname %(ejabberd_node)s \\
     -noinput \\
     -s ejabberd \\
     -boot start_sasl \\
